@@ -13,6 +13,11 @@ output "acr_name" {
   value       = azurerm_container_registry.main.name
 }
 
+output "storage_account_name" {
+  description = "Storage account name for backups"
+  value       = azurerm_storage_account.backup.name
+}
+
 output "kube_config" {
   description = "Kubernetes config"
   value       = azurerm_kubernetes_cluster.main.kube_config_raw
