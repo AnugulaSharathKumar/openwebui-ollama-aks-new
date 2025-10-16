@@ -1,0 +1,11 @@
+project_name = "ollamawebui"
+environment = "dev"
+location = "East US"
+node_count = 3
+vm_size = "Standard_D4s_v3"
+
+tags = {
+  Project     = "Ollama-OpenWebUI"
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+}
