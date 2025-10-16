@@ -1,4 +1,3 @@
-# This file should contain ONLY the terraform block and providers
 terraform {
   required_version = ">= 1.0"
   required_providers {
@@ -25,19 +24,5 @@ provider "azurerm" {
   }
 }
 
-# Kubernetes provider will be configured after AKS is created
-provider "kubernetes" {
-  host                   = azurerm_kubernetes_cluster.main.kube_config.0.host
-  client_certificate     = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_certificate)
-  client_key             = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.cluster_ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = azurerm_kubernetes_cluster.main.kube_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.cluster_ca_certificate)
-  }
-}
+# Note: Kubernetes and Helm providers will be configured after AKS is created
+# We'll use data sources to avoid circular dependencies

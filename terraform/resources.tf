@@ -20,7 +20,7 @@ resource "azurerm_virtual_network" "main" {
   name                = "vnet-${var.project_name}-${var.environment}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.1.0.0/16"]  # Changed from 10.0.0.0/16 to avoid conflicts
   tags                = var.tags
 }
 
@@ -29,7 +29,7 @@ resource "azurerm_subnet" "aks" {
   name                 = "snet-aks"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = ["10.1.1.0/24"]  # Changed to match new VNet range
 }
 
 # AKS Cluster
@@ -40,9 +40,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   dns_prefix          = "aks-${var.project_name}"
 
   default_node_pool {
-    name       = "default"
-    node_count = var.node_count
-    vm_size    = var.vm_size
+    name           = "default"
+    node_count     = var.node_count
+    vm_size        = var.vm_size
     vnet_subnet_id = azurerm_subnet.aks.id
   }
 
@@ -53,6 +53,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
+    service_cidr   = "10.2.0.0/16"    # Explicitly set service CIDR
+    dns_service_ip = "10.2.0.10"      # Must be within service CIDR
+    docker_bridge_cidr = "172.17.0.1/16"  # Docker bridge CIDR
   }
 
   tags = var.tags
@@ -74,4 +77,13 @@ resource "azurerm_role_assignment" "aks_acr" {
   role_definition_name             = "AcrPull"
   scope                            = azurerm_container_registry.main.id
   skip_service_principal_aad_check = true
+}
+
+# Configure kubectl after AKS creation
+resource "null_resource" "configure_kubectl" {
+  depends_on = [azurerm_kubernetes_cluster.main]
+
+  provisioner "local-exec" {
+    command = "az aks get-credentials --resource-group ${azurerm_resource_group.main.name} --name ${azurerm_kubernetes_cluster.main.name} --overwrite-existing"
+  }
 }
