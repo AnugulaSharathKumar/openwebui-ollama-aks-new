@@ -18,7 +18,7 @@ az login
 az account show
 
 # Set subscription (if multiple)
-az account set --subscription '9d5aeb06-65c7-43a3-8300-85e9434f90a4'
+az account set --subscription 'Subscription ID'
 ---
 **step-3**
 # Clone your repository
